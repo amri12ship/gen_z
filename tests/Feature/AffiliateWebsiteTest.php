@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class AffiliateWebsiteTest extends TestCase
@@ -66,11 +67,11 @@ class AffiliateWebsiteTest extends TestCase
         $product = Product::query()->where('slug', 'produk-uji-coba')->firstOrFail();
         $image = $product->images()->firstOrFail();
 
-        $this->assertFileExists(public_path('uploads/'.$image->image_path));
-        $this->assertSame('/uploads/'.$image->image_path, $image->url());
-        $this->assertSame('/uploads/'.$image->image_path, $product->imageUrl());
+        $this->assertFileExists(Storage::disk('public')->path($image->image_path));
+        $this->assertSame(Storage::disk('public')->url($image->image_path), $image->url());
+        $this->assertSame(Storage::disk('public')->url($image->image_path), $product->imageUrl());
 
-        unlink(public_path('uploads/'.$image->image_path));
+        Storage::disk('public')->delete($image->image_path);
     }
 
     public function test_all_admin_pages_render(): void

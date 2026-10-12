@@ -3,40 +3,27 @@
 namespace App\Support;
 
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 /**
- * Menyimpan file upload langsung di dalam folder public/uploads sehingga
- * gambar selalu bisa diakses tanpa perlu `php artisan storage:link`.
- * Ini membuat fitur gambar tetap berfungsi di hosting apa pun.
+ * Simpan dan ambil file upload lewat disk Storage default.
+ *
+ * - Lokal / hosting biasa : disk "public" (storage/app/public) + storage:link.
+ * - Laravel Cloud          : disk S3 / object storage di-inject otomatis oleh Cloud
+ *   (bersifat persisten, tidak hilang saat redeploy).
  */
 class Uploads
 {
-    public const DIRECTORY = 'uploads';
-
     /**
-     * Simpan file ke public/uploads/{folder} dan kembalikan path relatif.
+     * Simpan file ke disk default dan kembalikan path relatif.
      */
     public static function store(UploadedFile $file, string $folder): string
     {
-        $folder = trim($folder, '/');
-
-        $name = Str::random(40).'.'.strtolower($file->getClientOriginalExtension() ?: $file->extension());
-
-        $destination = public_path(self::DIRECTORY.'/'.$folder);
-
-        if (! is_dir($destination)) {
-            mkdir($destination, 0775, true);
-        }
-
-        $file->move($destination, $name);
-
-        return $folder.'/'.$name;
+        return Storage::disk()->putFile(trim($folder, '/'), $file);
     }
 
     /**
      * Ubah path relatif menjadi URL yang bisa dibuka browser.
-     * Memakai URL relatif terhadap root agar tidak bergantung pada APP_URL.
      */
     public static function url(?string $path): ?string
     {
@@ -44,22 +31,16 @@ class Uploads
             return null;
         }
 
-        return '/'.self::DIRECTORY.'/'.ltrim($path, '/');
+        return Storage::disk()->url($path);
     }
 
     /**
-     * Hapus file dari public/uploads.
+     * Hapus file dari disk default.
      */
     public static function delete(?string $path): void
     {
-        if (! $path) {
-            return;
-        }
-
-        $full = public_path(self::DIRECTORY.'/'.ltrim($path, '/'));
-
-        if (is_file($full)) {
-            @unlink($full);
+        if ($path) {
+            Storage::disk()->delete($path);
         }
     }
 }

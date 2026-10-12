@@ -18,10 +18,11 @@ Route::get('/produk/{slug}', [CatalogController::class, 'show'])->name('products
 Route::post('/produk/{product}/review', [CatalogController::class, 'storeReview'])->name('reviews.store');
 Route::get('/go/{product}', [AffiliateClickController::class, 'go'])->name('affiliate.go');
 
-// Cadangan: layani file dari public/uploads lewat Laravel bila web server
-// tidak mengarah langsung ke folder public. Tanpa perlu `storage:link`.
-Route::get('/uploads/{path}', function (string $path) {
-    $full = public_path('uploads/'.ltrim($path, '/'));
+// Cadangan untuk hosting yang document root-nya tidak mengarah ke /public
+// atau symlink storage belum dibuat: layani file dari storage/app/public
+// lewat Laravel. Di Laravel Cloud, gambar diambil dari object storage (S3).
+Route::get('/storage/{path}', function (string $path) {
+    $full = storage_path('app/public/'.ltrim($path, '/'));
 
     abort_unless(is_file($full), 404);
 
