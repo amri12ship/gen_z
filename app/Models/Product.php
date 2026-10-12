@@ -17,7 +17,7 @@ class Product extends Model
 
     public const STATUS_INACTIVE = 'inactive';
 
-    public const MAX_IMAGES = 4;
+    public const MAX_IMAGES = 3;
 
     protected $fillable = [
         'category_id',
