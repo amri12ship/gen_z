@@ -1,0 +1,7 @@
+# Cadangan untuk hosting yang document root-nya TIDAK bisa diarahkan ke /public.
+# Dengan file ini, request ke folder project akan otomatis diarahkan ke /public
+# sehingga gambar di public/uploads dan seluruh fitur tetap berfungsi.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
